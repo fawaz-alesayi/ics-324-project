@@ -12,6 +12,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+import club.IClubMemberRepository;
+import club.IClubRepository;
+import club.MySQLClubMemberRepository;
+import club.MySQLClubRepository;
+import club_applications.IClubApplicationRepository;
+import club_applications.MySQLClubApplicationRepository;
 import guest.IStudentRepository;
 import guest.MySQLStudentRepository;
 import guest.Student;
@@ -29,6 +35,9 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
+import project.IProjectRepository;
+import project.MySQLProjectRepository;
 import utility.CreateDbConnection;
 
 public class ClubAdminController implements Initializable {
@@ -80,6 +89,10 @@ public class ClubAdminController implements Initializable {
 	private ComboBox<Student> applicantListComboBox;
 	
 	IStudentRepository studentRepo;
+	IClubMemberRepository clubMemberRepo;
+	IProjectRepository projectRepo;
+	IClubRepository clubRepo;
+	IClubApplicationRepository clubAppRepo;
 
 	Connection conn = null;
 	Statement stmt = null;
@@ -118,7 +131,7 @@ public class ClubAdminController implements Initializable {
 			}
 
 			catch (SQLException e) {
-				// TODO Auto-generated catch block
+				showErrorDialogue("Database Error", "Error", "An error was encountered please try again later");
 				e.printStackTrace();
 			}
 		}
@@ -167,7 +180,7 @@ public class ClubAdminController implements Initializable {
 			alert.setHeaderText("Number of projects is: " + count);
 			alert.showAndWait();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			showErrorDialogue("Database Error", "Error", "An error was encountered please try again later");
 			e.printStackTrace();
 		}
 	}
@@ -208,6 +221,7 @@ public class ClubAdminController implements Initializable {
 			}
 		} catch (Exception e) {
 			System.err.println(e);
+			showErrorDialogue("Database Error", "Error", "An error was encountered please try again later");
 		}
 	}
 
@@ -221,6 +235,7 @@ public class ClubAdminController implements Initializable {
 			}
 		} catch (Exception e) {
 			System.err.println(e);
+			showErrorDialogue("Database Error", "Error", "An error was encountered please try again later");
 		}
 	}
 
@@ -251,9 +266,12 @@ public class ClubAdminController implements Initializable {
 
 	public void approveApplicantToJoinClub(ActionEvent event) {
 		int selectedClubId = clubIdComboBox.getValue();
-		int selectedApplicantStudentId = applicantListComboBox.getValue().id;
+		Student s = applicantListComboBox.getValue();
+		int selectedApplicantStudentId = s.id;
 		try {
 			insertMemberToClub(selectedClubId, selectedApplicantStudentId);
+			changeApplicationStatusToApproved(selectedApplicantStudentId);
+			showCompletionDialogueWithHeader(s.info.getFirstName() + " has joined the club.");
 		} catch (Exception e) {
 			showErrorDialogue("Database Error", "Error", "An error was encountered please try again later");
 			e.printStackTrace();
@@ -268,6 +286,10 @@ public class ClubAdminController implements Initializable {
 		statement.setInt(3, DatabaseDefinitions.ACTIVE_MEMBER);
 		statement.setDate(4, getCurrentDateAsSQL());
 		statement.execute();
+	}
+	
+	private void changeApplicationStatusToApproved(int applicantId) {
+		
 	}
 
 	private java.sql.Date getCurrentDateAsSQL() {
@@ -353,6 +375,8 @@ public class ClubAdminController implements Initializable {
 			loadProjectLeaderComboBox();
 			
 			loadRepositories(conn);
+			
+			changeComboBoxViewToShowFullNameAndId(applicantListComboBox);
 
 		} catch (Exception e) {
 			System.out.println(e);
@@ -360,7 +384,27 @@ public class ClubAdminController implements Initializable {
 
 	}
 	
+	private void changeComboBoxViewToShowFullNameAndId(ComboBox<Student> combobox) {
+		combobox.setConverter(new StringConverter<Student>() {
+			
+			@Override
+			public String toString(Student s) {
+				return s.info.getFirstName() + " " + s.info.getLastName() + " - ID: " + s.id;
+			}
+
+			@Override
+			public Student fromString(String string) {
+				return combobox.getSelectionModel().getSelectedItem();
+			}
+		});
+		
+	}
+
 	private void loadRepositories(Connection conn) {
 		studentRepo = new MySQLStudentRepository(conn);
+		clubRepo = new MySQLClubRepository(conn);
+		clubMemberRepo = new MySQLClubMemberRepository(conn);
+		projectRepo = new MySQLProjectRepository(conn, clubRepo);
+		clubAppRepo = new MySQLClubApplicationRepository(conn, studentRepo, clubRepo);
 	}
 }
