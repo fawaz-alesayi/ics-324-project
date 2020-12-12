@@ -8,7 +8,7 @@ public class CreateDbConnection {
 	        try {
 	            Class.forName("com.mysql.jdbc.Driver");
 				Connection con = DriverManager.getConnection("jdbc:mysql://"
-						+ "kcs.cnqw4wj71pc6.eu-central-1.rds.amazonaws.com/kcs",
+						+ "kcs.cnqw4wj71pc6.eu-central-1.rds.amazonaws.com/kstds",
 						"kcs-api", "437eL8Xam5muluLowiFEq85e6Ek825");
 	            return con;
 	        } catch (ClassNotFoundException | SQLException ex) {

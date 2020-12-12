@@ -231,7 +231,7 @@ public class ClubAdminController implements Initializable {
 		}
 	}
 
-	public void loadApplicantListComboBox(ActionEvent event) {
+	public void loadApplicantListComboBox() {
 		try {
 			int selectedClubId = clubIdComboBox.getValue();
 			PreparedStatement ps = conn.prepareStatement(
@@ -265,11 +265,12 @@ public class ClubAdminController implements Initializable {
 			statement.setInt(3, 12);
 			statement.setDate(4, getCurrentDateAsSQL());
 			statement.execute();
-
+			
 			statement = conn.prepareStatement("UPDATE club_applicant SET StatusID = ? WHERE StudentID = ? ");
 			statement.setInt(1, 22); // changes the application status to APPROVED.
 			statement.setInt(2, selectedApplicantStudentId);
 			statement.execute();
+			loadApplicantListComboBox();
 		} catch (SQLException e) {
 			showErrorDialogue("Database Error", "Error", "An error was encountered please try again later");
 			e.printStackTrace();
