@@ -8,34 +8,34 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.shape.Rectangle?>
 
-<AnchorPane prefHeight="666.0" prefWidth="845.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.ClubAdminController">
+<AnchorPane prefHeight="666.0" prefWidth="845.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.ClubAdminController">
    <children>
       <Rectangle arcHeight="25.0" arcWidth="25.0" fill="#ffffff00" height="156.0" layoutX="14.0" layoutY="497.0" stroke="#4a4a4a" strokeType="INSIDE" strokeWidth="0.5" width="538.0" />
-      <Rectangle arcHeight="25.0" arcWidth="25.0" fill="#ffffff00" height="442.0" layoutX="13.0" layoutY="35.0" stroke="#4a4a4a" strokeType="INSIDE" strokeWidth="0.5" width="819.0" />
+      <Rectangle arcHeight="25.0" arcWidth="25.0" fill="#ffffff00" height="449.0" layoutX="13.0" layoutY="35.0" stroke="#4a4a4a" strokeType="INSIDE" strokeWidth="0.5" width="819.0" />
       <Button fx:id="addProjectBtn" layoutX="397.0" layoutY="141.0" mnemonicParsing="false" onAction="#AddProject" text="Add Project" />
       <TextField fx:id="addProjectId" layoutX="22.0" layoutY="48.0" prefHeight="25.0" prefWidth="54.0" promptText="ID" />
       <TextField fx:id="addProjectName" layoutX="106.0" layoutY="48.0" promptText="Name" />
       <ComboBox fx:id="addProjectTypeId" layoutX="279.0" layoutY="48.0" prefWidth="150.0" promptText="Project Type ID" />
       <ComboBox fx:id="addProjectClubId" layoutX="449.0" layoutY="48.0" prefWidth="150.0" promptText="Club ID" />
-      <TextField fx:id="addProjectDesc" layoutX="524.0" layoutY="98.0" promptText="Description" />
-      <DatePicker fx:id="addProjectFromDate" layoutX="129.0" layoutY="98.0" promptText="From" />
+      <TextField fx:id="addProjectDesc" layoutX="586.0" layoutY="98.0" promptText="Description" />
+      <DatePicker fx:id="addProjectFromDate" layoutX="91.0" layoutY="98.0" promptText="From" />
       <DatePicker fx:id="addProjectToDate" layoutX="320.0" layoutY="98.0" promptText="To" />
       <ComboBox fx:id="addProjectStatusId" layoutX="635.0" layoutY="48.0" prefWidth="150.0" promptText="Status ID" />
-      <Button fx:id="changeProjectStatusBtn" layoutX="363.0" layoutY="235.0" mnemonicParsing="false" onAction="#ChangeProjectStatus" text="Change Project Status" />
-      <ComboBox fx:id="changeProjectId" layoutX="273.0" layoutY="196.0" prefWidth="150.0" promptText="Project ID" />
-      <ComboBox fx:id="changeProjectStatusId" layoutX="436.0" layoutY="196.0" prefWidth="150.0" promptText="Status ID" />
+      <Button fx:id="changeProjectStatusBtn" layoutX="362.0" layoutY="212.0" mnemonicParsing="false" onAction="#ChangeProjectStatus" text="Change Project Status" />
+      <ComboBox fx:id="changeProjectId" layoutX="31.0" layoutY="212.0" prefWidth="150.0" promptText="Project ID" />
+      <ComboBox fx:id="changeProjectStatusId" layoutX="194.0" layoutY="212.0" prefWidth="150.0" promptText="Status ID" />
       <Button fx:id="addMemberBtn" layoutX="359.0" layoutY="344.0" mnemonicParsing="false" onAction="#addMember" text="Add Member to Project" />
-      <ComboBox fx:id="addMemberId" layoutX="106.0" layoutY="296.0" prefWidth="150.0" promptText="Member ID" />
-      <ComboBox fx:id="addMemberProjectId" layoutX="266.0" layoutY="296.0" prefWidth="150.0" promptText="Project ID" />
-      <ComboBox fx:id="selectLeaderComboBox" layoutX="445.0" layoutY="395.0" onAction="#loadProjectLeaderComboBox" prefWidth="150.0" promptText="Member ID" />
-      <Button fx:id="selectProjectLeader" layoutX="279.0" layoutY="440.0" mnemonicParsing="false" onAction="#selectProjectLeader" prefHeight="25.0" prefWidth="149.0" text="Select Leader" />
-      <Button layoutX="445.0" layoutY="440.0" mnemonicParsing="false" onAction="#getNumberOfProjects" prefHeight="25.0" prefWidth="281.0" text="Compute Number of Projects in Current Club" />
-      <Button layoutX="26.0" layoutY="575.0" mnemonicParsing="false" onAction="#approveApplicantToJoinClub" text="Approve to Join " />
-      <ComboBox fx:id="applicantListComboBox" layoutX="194.0" layoutY="534.0" prefWidth="150.0" promptText="List of Applicants" />
+      <ComboBox fx:id="addMemberId" layoutX="31.0" layoutY="296.0" prefWidth="150.0" promptText="Member ID" />
+      <ComboBox fx:id="addMemberProjectId" layoutX="198.0" layoutY="296.0" prefWidth="150.0" promptText="Project ID" />
+      <ComboBox fx:id="selectLeaderComboBox" layoutX="234.0" layoutY="395.0" onAction="#loadProjectLeaderComboBox" prefWidth="150.0" promptText="Member ID" />
+      <Button fx:id="selectProjectLeader" layoutX="397.0" layoutY="395.0" mnemonicParsing="false" onAction="#selectProjectLeader" prefHeight="25.0" prefWidth="149.0" text="Select Leader" />
+      <Button layoutX="492.0" layoutY="443.0" mnemonicParsing="false" onAction="#getNumberOfProjects" prefHeight="31.0" prefWidth="328.0" text="Compute Number of Projects in Current Club" />
+      <Button layoutX="27.0" layoutY="596.0" mnemonicParsing="false" onAction="#approveApplicantToJoinClub" text="Approve to Join " />
+      <ComboBox fx:id="applicantListComboBox" layoutX="194.0" layoutY="534.0" prefHeight="31.0" prefWidth="187.0" promptText="List of Applicants" />
       <Button fx:id="logoutbtn" layoutX="586.0" layoutY="627.0" mnemonicParsing="false" onAction="#logout" prefHeight="25.0" prefWidth="127.0" text="Logout" />
-      <DatePicker fx:id="addMemberFromDate" layoutX="424.0" layoutY="296.0" promptText="From" />
+      <DatePicker fx:id="addMemberFromDate" layoutX="368.0" layoutY="296.0" promptText="From" />
       <DatePicker fx:id="addMemberToDate" layoutX="609.0" layoutY="296.0" promptText="To" />
-      <ComboBox fx:id="computeProjectsClubId" layoutX="279.0" layoutY="395.0" prefWidth="150.0" promptText="Club ID" />
+      <ComboBox fx:id="computeProjectsClubId" layoutX="68.0" layoutY="395.0" prefWidth="150.0" promptText="Club ID" />
       <ComboBox fx:id="clubIdComboBox" layoutX="26.0" layoutY="534.0" onAction="#loadApplicantListComboBox" prefWidth="150.0" promptText="Club ID" />
       <Label layoutX="22.0" layoutY="14.0" text="Project" />
       <Label layoutX="29.0" layoutY="507.0" text="Club ID" />

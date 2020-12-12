@@ -5,6 +5,7 @@ import java.net.URL;
 import java.sql.*;
 import java.util.ResourceBundle;
 
+
 import javafx.beans.binding.BooleanBinding;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -16,7 +17,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import utility.BCrypt;
 import utility.CreateDbConnection;
+import utility.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -36,7 +39,7 @@ public class LoginController implements Initializable {
 
 
 	 Connection conn = null;
-	 Statement stmt = null;
+	 PreparedStatement stmt = null;
 	 ResultSet rs = null;
 	 static String id = null;
 
@@ -54,6 +57,7 @@ public class LoginController implements Initializable {
 
 	public void login(ActionEvent event) {
 		id = userID.getText();
+
 		String passW = password.getText();
 		int userType= -1;
 		if (id.isEmpty() || passW.isEmpty()) {
@@ -61,25 +65,31 @@ public class LoginController implements Initializable {
 			statusLbl.setText("Enter LogIn Information!");
 		} else {
 			try {
-				stmt = conn.createStatement();
-				rs = stmt.executeQuery("SELECT * FROM user WHERE ID =" + id + " AND Password = " + passW);
-				if (!rs.next()) {
+				int uid = Integer.parseInt(id);
+				stmt = conn.prepareStatement("SELECT password FROM user WHERE StudentID = ?");
+				stmt.setInt(1, uid);
+				rs = stmt.executeQuery();
+				rs.next();
+				String encPassW = rs.getString(1);
+				if(!BCrypt.checkpw(passW, encPassW)){
 					statusLbl.setTextFill(Color.RED);
 					statusLbl.setText("invalid LogIn Information! please try again");
-				} else {
-					//stmt = conn.createStatement();
-					rs = stmt.executeQuery("SELECT UsertypeId FROM user WHERE ID =" + id + " AND Password = " + passW);
+				}else{
+					stmt = conn.prepareStatement("SELECT userTypeID FROM user WHERE StudentID = ?");
+					stmt.setInt(1, uid);
+					rs = stmt.executeQuery();
 					rs.next();
 					userType = rs.getInt(1);
-					//System.out.println(userType);
 					statusLbl.setTextFill(Color.GREEN);
 					statusLbl.setText("Login successful!");
 				}
+
 			} catch (SQLException e) {
+				ShowDialog.showErrorDialogue("Database Error", "Error", "An error was encountered, please make sure your login information is correct");
 				e.printStackTrace();
 			}
 		}
-		if( userType == 1){
+		if(userType == 1){
 			try {
 				Node node = (Node) event.getSource();
 				Stage stage = (Stage) node.getScene().getWindow();
@@ -120,6 +130,21 @@ public class LoginController implements Initializable {
 				System.err.println(ex.getMessage());
 			}
 		}
+		else if(userType == 4){
+			try {
+				Node node = (Node) event.getSource();
+				Stage stage = (Stage) node.getScene().getWindow();
+				stage.close();
+				//stage.setMaxHeight(1000);
+				//stage.setMaxWidth(1500);
+				Scene scene = new Scene(FXMLLoader.load(getClass().getResource("/application/Guest.fxml")));
+				stage.setScene(scene);
+				stage.show();
+
+			} catch (IOException ex) {
+				System.err.println(ex.getMessage());
+			}
+		}
 	}
 
 	public void guestLogin(ActionEvent event){
@@ -138,6 +163,7 @@ public class LoginController implements Initializable {
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
+
 		if (conn == null) {
 			statusLbl.setTextFill(Color.RED);
 			statusLbl.setText("Server Error : Check Server Connection");

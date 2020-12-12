@@ -6,7 +6,7 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.ResourceBundle;
-
+import utility.*;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -23,8 +23,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
-import utility.CreateDbConnection;
-import utility.Dialogues;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -81,7 +79,7 @@ public class SystemAdminController implements Initializable {
 	private DatePicker addMemberToDate;
 
 	Connection conn = null;
-	Statement stmt = null;
+	PreparedStatement stmt = null;
 	ResultSet rs = null;
 	ResultSet rs2 = null;
 	final String USER_ID = LoginController.getUserID();
@@ -111,103 +109,147 @@ public class SystemAdminController implements Initializable {
 		}
 	}
 
+	private java.sql.Date getCurrentDateAsSQL() {
+		java.util.Date date = new java.util.Date();
+		java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+		return sqlDate;
+	}
+
 	public void addClub(ActionEvent event) {
-		String clubID = txtClubID.getText();
-		System.out.println(clubID);
-		String name = txtName.getText();
-		System.out.println(name);
-		name = "'" + name + "'";
-		String address = txtAddress.getText();
-		address = "'" + address + "'";
-		String phone = txtPhone.getText();
-		String desc = txtDesc.getText();
-		desc = "'" + desc + "'";
-		Integer depID = addClubDepID.getValue();
-		System.out.println(depID);
-		Integer statusID = addClubStatusID.getValue();
-		if (name.isEmpty() || address.isEmpty()) {
-			// statusLbl.setTextFill(Color.RED);
-			// statusLbl.setText("Enter LogIn Information!");
-			System.out.println("write something");
-		} else {
-			try {
-				stmt = conn.createStatement();
-				int tst = stmt
-						.executeUpdate("INSERT INTO club(ID, Name, Address, Phone, des, DepartmentID, StatusID) VALUES("
-								+ clubID + "," + name + "," + address + "," + phone + "," + desc + "," + depID + ","
-								+ statusID + ");");
-				Alert alert = new Alert(AlertType.INFORMATION);
-				alert.setHeaderText("Club Added Successfully");
-				alert.showAndWait();
-			}
-			catch (SQLIntegrityConstraintViolationException e) {
-				Dialogues.showErrorDialogue("Error", "Could not add a new club", "This club already exists");
-				e.printStackTrace();
-			}
-			catch (SQLException e) {
-				e.printStackTrace();
-				Dialogues.showErrorDialogue("Error", "Could not add a new club", "There was a problem while adding a club. Please make sure you filled all the fields");
-			}
+		try {
+			int clubID = Integer.parseInt(txtClubID.getText());
+			String name = txtName.getText();
+			name = "'" + name + "'";
+			String address = txtAddress.getText();
+			address = "'" + address + "'";
+			String phone = txtPhone.getText();
+			String desc = txtDesc.getText();
+			desc = "'" + desc + "'";
+			Integer depID = addClubDepID.getValue();
+			Integer statusID = addClubStatusID.getValue();
+
+			stmt = conn.prepareStatement("INSERT INTO Club(ID, Name, Address, Phone, des, DepartmentID, StatusID)"
+					+ "VALUES(?, ?, ?, ?, ?, ?, ? )");
+			stmt.setInt(1, clubID);
+			stmt.setString(2, name);
+			stmt.setString(3, address);
+			stmt.setString(4, phone);
+			stmt.setString(5, desc);
+			stmt.setInt(6, depID);
+			stmt.setInt(7, statusID);
+
+			stmt.executeUpdate();
+			Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setHeaderText("Club Added Successfully");
+			alert.showAndWait();
+
+			filladdClubDepID();
+
+			filladdMemberClubID();
+
+			fillchangeRoleClubID();
+
+			fillcomputeMembers();
+
+			fillcomputeProjects();
+
+		} catch (SQLException e) {
+			ShowDialog.showErrorDialogue("Error", "club creation error",
+					"make sure you entered valid club information");
+			e.printStackTrace();
+		} catch (Exception e) {
+			ShowDialog.showErrorDialogue("Error", "info required", "please enter all required infromation");
+			e.printStackTrace();
 		}
 	}
 
 	public void addMember(ActionEvent event) {
-		Integer clubID = addMemberClubID.getValue();
-		Integer StudentID = addMemberStudentID.getValue();
-		Integer StatusID = addMemberStatusID.getValue();
-		// LocalDate tmpDate =addMemberFromDate.getValue();
-		String fromDate = addMemberFromDate.getValue().toString();
-		fromDate = "'" + fromDate + "'";
-		// System.out.println(fromDate);
-		String toDate = addMemberToDate.getValue().toString();
-		toDate = "'" + toDate + "'";
-
-		if (clubID.equals(null) || StudentID.equals(null)) {
-			// statusLbl.setTextFill(Color.RED);
-			// statusLbl.setText("Enter LogIn Information!");
-			System.out.println("write something");
-		} else {
+		try {
+			Integer clubID = addMemberClubID.getValue();
+			Integer StudentID = addMemberStudentID.getValue();
+			Integer StatusID = addMemberStatusID.getValue();
+			java.sql.Date dateFrom;
 			try {
-				stmt = conn.createStatement();
-				int tst = stmt.executeUpdate(
-						"INSERT INTO clubmember VALUES(" + clubID + "," + StudentID + "," + "STR_TO_DATE(" + fromDate
-								+ ", '%Y-%m-%d'), STR_TO_DATE(" + toDate + ", '%Y-%m-%d')," + StatusID + ") ;");
-				Alert alert = new Alert(AlertType.INFORMATION);
-				alert.setHeaderText("Member Added Successfully");
-				alert.showAndWait();
+				dateFrom = Date.valueOf(addMemberFromDate.getValue());
+			} catch (Exception e) {
+				dateFrom = getCurrentDateAsSQL();
+			}
+			java.sql.Date dateTo;
+			try {
+				dateTo = Date.valueOf(addMemberToDate.getValue());
+			} catch (Exception e) {
+				dateTo = getCurrentDateAsSQL();
 			}
 
-			catch (SQLException e) {
-				e.printStackTrace();
-				Dialogues.showErrorDialogue("Error", "Could not add a new student", "There was a problem while adding a member. Please make sure you filled all the fields");
-			}
+			stmt = conn.prepareStatement("INSERT INTO Clubmember VALUES(?, ?, ?, ?, ?);");
+			stmt.setInt(1, clubID);
+			stmt.setInt(2, StudentID);
+			stmt.setDate(3, dateFrom);
+			stmt.setDate(4, dateTo);
+			stmt.setInt(5, StatusID);
+			stmt.executeUpdate();
+			Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setHeaderText("Member Added Successfully");
+			alert.showAndWait();
+			String password = StudentID.toString();
+			password = BCrypt.hashpw(password, BCrypt.gensalt());
+			stmt = conn.prepareStatement("INSERT INTO user VALUES(?, ?, ?, ?);");
+			stmt.setInt(1, StudentID);
+			stmt.setInt(2, 3); // usertype is clubMember.
+			stmt.setString(3, password);
+			stmt.setInt(4, 19);
+			alert.setHeaderText("user created Successfully with password = studentID");
+			alert.showAndWait();
+		} catch (SQLException e) {
+			ShowDialog.showErrorDialogue("Error", "member not added", "make sure you entered valid member information");
+			e.printStackTrace();
+		} catch (Exception e) {
+			ShowDialog.showErrorDialogue("Error", "info required", "please enter all required infromation");
+			e.printStackTrace();
 		}
-
 	}
 
 	public void ChangeMemberRole(ActionEvent event) {
-		Integer clubID = changeRoleClubID.getValue();
-		Integer studentID = changeRoleStdID.getValue();
-		String newRole = role.getValue();
-		newRole = "'" + newRole + "'";
-		String fromDate = changeRoleFromDate.getValue().toString();
-		fromDate = "'" + fromDate + "'";
-		String toDate = changeRoleToDate.getValue().toString();
-		toDate = "'" + toDate + "'";
 		try {
-			stmt = conn.createStatement();
-			// tst = stmt.executeUpdate("Delete from clubmember WHERE
-			// ID="+studentID);
-			stmt.executeUpdate("INSERT INTO clubadmin VALUES(" + clubID + "," + studentID + "," + "STR_TO_DATE("
-					+ fromDate + ", '%Y-%m-%d'), STR_TO_DATE(" + toDate + ", '%Y-%m-%d')," + newRole + ") ;");
+			Integer clubID = changeRoleClubID.getValue();
+			Integer studentID = changeRoleStdID.getValue();
+			String newRole = role.getValue();
+			java.sql.Date dateFrom;
+			try {
+				dateFrom = Date.valueOf(addMemberFromDate.getValue());
+			} catch (Exception e) {
+				dateFrom = getCurrentDateAsSQL();
+			}
+			java.sql.Date dateTo;
+			try {
+				dateTo = Date.valueOf(addMemberToDate.getValue());
+			} catch (Exception e) {
+				dateTo = getCurrentDateAsSQL();
+			}
+
+			stmt = conn.prepareStatement("INSERT INTO Clubadmin VALUES(?, ?, ?, ?, ?);");
+			stmt.setInt(1, clubID);
+			stmt.setInt(2, studentID);
+			stmt.setDate(3, dateFrom);
+			stmt.setDate(4, dateTo);
+			stmt.setString(5, newRole);
+			stmt.executeUpdate();
 			Alert alert = new Alert(AlertType.INFORMATION);
 			alert.setHeaderText("Member Role Changed Successfully");
 			alert.showAndWait();
-		}
+			stmt = conn.prepareStatement("UPDATE user SET userTypeID = ? WHERE StudentID = ?");
+			stmt.setInt(1, 2);
+			stmt.setInt(2, studentID);
+			stmt.executeUpdate();
+			alert.setHeaderText("user type changed to ClubAdmin Successfully");
+			alert.showAndWait();
 
-		catch (SQLException e) {
+		}catch (SQLException e) {
+			ShowDialog.showErrorDialogue("Error", "failed to change role", "make sure you entered valid information");
 			e.printStackTrace();
-			Dialogues.showErrorDialogue("Error", "Could not add a change the member's role", "There was a problem while changing the member's role.");
+		} catch (Exception e) {
+			ShowDialog.showErrorDialogue("Error", "info required", "please enter all required infromation");
+			e.printStackTrace();
 		}
 	}
 
@@ -215,15 +257,18 @@ public class SystemAdminController implements Initializable {
 		changeRoleStdID.getItems().clear();
 		Integer clubID = changeRoleClubID.getValue();
 		try {
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT STUDENTID FROM clubmember WHERE clubId = " + clubID);
+			PreparedStatement st = conn
+					.prepareStatement("SELECT STUDENTID FROM CLUBMEMBER WHERE clubId =  ? " + "and statusID = 12");
+			st.setInt(1, clubID);
+			rs = st.executeQuery();
 			while (rs.next()) {
 				System.out.println(rs.getInt(1));
 				changeRoleStdID.getItems().add(rs.getInt(1));
 			}
 
 		} catch (SQLException e) {
-			Dialogues.showErrorDialogue("Error", "Could not add a fetch some club members", "There was a problem while fetching some club members. Please try again later");
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 	}
@@ -231,100 +276,146 @@ public class SystemAdminController implements Initializable {
 	public void countClubMembers(ActionEvent event) {
 		Integer clubID = computeMembers.getValue();
 		try {
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT DISTINCT COUNT(studentid) FROM clubmember where clubid =" + clubID);
+			stmt = conn.prepareStatement("SELECT DISTINCT COUNT(studentid) FROM clubmember where clubid = ?");
+			stmt.setInt(1, clubID);
+			rs = stmt.executeQuery();
 			rs.next();
 			int count = rs.getInt(1);
 			Alert alert = new Alert(AlertType.INFORMATION);
-			alert.setHeaderText("Number of club members is: "+ count);
+			alert.setHeaderText("Number of club members is: " + count);
 			alert.showAndWait();
 		} catch (SQLException e) {
-			Dialogues.showErrorDialogue("Error", "Could not count club members", "There was a problem while counting the number of members of the club. Please try again later.");
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			ShowDialog.showErrorDialogue("Error", "No Club ID", "please Choose a club ID to Count its members");
 			e.printStackTrace();
 		}
 
 	}
+
 	public void countProjectMembers(ActionEvent event) {
 		Integer clubID = computeProjects.getValue();
 		try {
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT DISTINCT COUNT(*) FROM project where clubid =" + clubID);
+			stmt = conn.prepareStatement("SELECT DISTINCT COUNT(*) FROM project where clubid = ?");
+			stmt.setInt(1, clubID);
+			rs = stmt.executeQuery();
 			rs.next();
 			int count = rs.getInt(1);
 			Alert alert = new Alert(AlertType.INFORMATION);
-			alert.setHeaderText("Number of club members is: "+ count);
+			alert.setHeaderText("Number of club members is: " + count);
 			alert.showAndWait();
 		} catch (SQLException e) {
-			Dialogues.showErrorDialogue("Error", "Could not count number of projects", "There was a problem while counting number of projects");
-
+			e.printStackTrace();
+		} catch (Exception e) {
+			ShowDialog.showErrorDialogue("Error", "No Club ID", "please Choose a club ID to Count its projects");
 			e.printStackTrace();
 		}
 
+	}
+
+	private void filladdClubDepID(){
+		addClubDepID.getItems().clear();
+		try {
+			stmt = conn.prepareStatement("SELECT ID FROM department");
+			rs = stmt.executeQuery();
+			while (rs.next()) {
+				addClubDepID.getItems().add(rs.getInt(1));
+			}
+		} catch (SQLException e) {
+			ShowDialog.showErrorDialogue("fatalError", "Uknown Error", "something bad happend");
+			e.printStackTrace();
+		}
+
+	}
+	private void filladdMemberClubID(){
+		addMemberClubID.getItems().clear();
+		try {
+			stmt = conn.prepareStatement("SELECT ID FROM club");
+			rs = stmt.executeQuery();
+			while (rs.next()) {
+				addMemberClubID.getItems().add(rs.getInt(1));
+			}
+		} catch (SQLException e) {
+			ShowDialog.showErrorDialogue("fatalError", "Uknown Error", "something bad happend");
+			e.printStackTrace();
+		}
+	}
+	private void fillchangeRoleClubID(){
+		changeRoleClubID.getItems().clear();
+		try{
+			rs = stmt.executeQuery("SELECT ID FROM club");
+			while (rs.next()) {
+
+				changeRoleClubID.getItems().add(rs.getInt(1));
+			}
+		}catch (SQLException e) {
+			ShowDialog.showErrorDialogue("fatalError", "Uknown Error", "something bad happend");
+			e.printStackTrace();
+		}
+	}
+	private void fillcomputeMembers(){
+		computeMembers.getItems().clear();
+		try{
+			stmt = conn.prepareStatement("SELECT ID FROM club");
+			rs = stmt.executeQuery();
+			while (rs.next()) {
+				computeMembers.getItems().add(rs.getInt(1));
+			}
+		}catch (SQLException e) {
+			ShowDialog.showErrorDialogue("fatalError", "Uknown Error", "something bad happend");
+			e.printStackTrace();
+		}
+	}
+	private void fillcomputeProjects(){
+		computeProjects.getItems().clear();
+		try{
+			stmt = conn.prepareStatement("SELECT ID FROM club");
+			rs = stmt.executeQuery();
+			while (rs.next()) {
+				computeProjects.getItems().add(rs.getInt(1));
+			}
+		}catch (SQLException e) {
+			ShowDialog.showErrorDialogue("fatalError", "Uknown Error", "something bad happend");
+			e.printStackTrace();
+		}
 	}
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		try {
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT ID FROM department");
-			while (rs.next()) {
-				System.out.println(rs.getInt(1));
-				addClubDepID.getItems().add(rs.getInt(1));
-			}
+
+			filladdClubDepID();
+
+			filladdMemberClubID();
+
+			fillchangeRoleClubID();
+
+			fillcomputeMembers();
+
+			fillcomputeProjects();
 
 			rs = stmt.executeQuery("SELECT ID FROM status WHERE statustypeid = 4");
 			while (rs.next()) {
 				addClubStatusID.getItems().add(rs.getInt(1));
 			}
 
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT ID FROM club");
-			while (rs.next()) {
-				System.out.println(rs.getInt(1));
-				addMemberClubID.getItems().add(rs.getInt(1));
-			}
 
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT ID FROM student");
+			stmt = conn.prepareStatement("SELECT ID FROM student");
+			rs = stmt.executeQuery();
 			while (rs.next()) {
-				System.out.println(rs.getInt(1));
 				addMemberStudentID.getItems().add(rs.getInt(1));
 			}
 
-			rs = stmt.executeQuery("SELECT ID FROM status WHERE statustypeid = 1");
+			rs = stmt.executeQuery("SELECT ID FROM status WHERE statustypeid = 5");
 			while (rs.next()) {
 				addMemberStatusID.getItems().add(rs.getInt(1));
 			}
 
-			rs = stmt.executeQuery("SELECT ID FROM club");
-			while (rs.next()) {
-
-				changeRoleClubID.getItems().add(rs.getInt(1));
-			}
-			/*
-			 * rs = stmt.executeQuery("SELECT ID FROM student");
-			 * while(rs.next()){
-			 *
-			 * changeRoleStdID.getItems().add(rs.getInt(1)); }
-			 */
 			role.getItems().addAll("President", "Secretary");
 
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT ID FROM club");
-			while (rs.next()) {
-				System.out.println(rs.getInt(1));
-				computeMembers.getItems().add(rs.getInt(1));
-			}
 
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT ID FROM club");
-			while (rs.next()) {
-				System.out.println(rs.getInt(1));
-				computeProjects.getItems().add(rs.getInt(1));
-			}
 		} catch (Exception e) {
 			System.out.println(e);
-			Dialogues.showErrorDialogue("Error", "Could not load some data", "There was a problem while loading some data.");
-
 		}
 
 	}
