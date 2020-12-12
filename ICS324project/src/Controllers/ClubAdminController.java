@@ -254,17 +254,21 @@ public class ClubAdminController implements Initializable {
 		int selectedClubId = clubIdComboBox.getValue();
 		int selectedApplicantStudentId = applicantListComboBox.getValue();
 		try {
-			PreparedStatement statement = conn.prepareStatement(
-					"INSERT INTO clubmember(ClubID, StudentID, StatusID, FromDate) VALUES(?, ?, ?, ?);");
-			statement.setInt(1, selectedClubId);
-			statement.setInt(2, selectedApplicantStudentId);
-			statement.setInt(3, DatabaseDefinitions.ACTIVE_MEMBER);
-			statement.setDate(4, getCurrentDateAsSQL());
-			statement.execute();
-		} catch (SQLException e) {
+			insertMemberToClub(selectedClubId, selectedApplicantStudentId);
+		} catch (Exception e) {
 			showErrorDialogue("Database Error", "Error", "An error was encountered please try again later");
 			e.printStackTrace();
 		}
+	}
+	
+	private void insertMemberToClub(int clubId, int studentId) throws Exception {
+		PreparedStatement statement = conn.prepareStatement(
+				"INSERT INTO clubmember(ClubID, StudentID, StatusID, FromDate) VALUES(?, ?, ?, ?);");
+		statement.setInt(1, clubId);
+		statement.setInt(2, studentId);
+		statement.setInt(3, DatabaseDefinitions.ACTIVE_MEMBER);
+		statement.setDate(4, getCurrentDateAsSQL());
+		statement.execute();
 	}
 
 	private java.sql.Date getCurrentDateAsSQL() {
