@@ -258,7 +258,7 @@ public class ClubAdminController implements Initializable {
 					"INSERT INTO clubmember(ClubID, StudentID, StatusID, FromDate) VALUES(?, ?, ?, ?);");
 			statement.setInt(1, selectedClubId);
 			statement.setInt(2, selectedApplicantStudentId);
-			statement.setInt(3, 5);
+			statement.setInt(3, DatabaseDefinitions.ACTIVE_MEMBER);
 			statement.setDate(4, getCurrentDateAsSQL());
 			statement.execute();
 		} catch (SQLException e) {
