@@ -13,6 +13,7 @@ import guest.ApplyForAClubUseCase;
 import guest.IStudentRepository;
 import guest.MySQLStudentRepository;
 import guest.Student;
+import guest.StudentInfo;
 
 class Register {
 
@@ -29,7 +30,7 @@ class Register {
 		IStudentRepository studentTestRepository = new MySQLStudentRepository(TestDB.getConnection());
 		IClubRepository clubTestRepository = new MySQLClubRepository(TestDB.getConnection());
 		AcademicStanding standing = new AcademicStanding(AcademicStanding.FRESHMAN);
-		Student guest = new Student(2017, "Ali", "Al-Ahmadi", "05599553486", standing);
+		Student guest = new Student(2017, new StudentInfo("Ali", "Al-Ahmadi", "05599553486", standing));
 		ApplyForAClubUseCase usecase = new ApplyForAClubUseCase(guest, "icsClub", clubTestRepository, studentTestRepository, TestDB.getConnection());
 		usecase.execute();
 		List<Integer> applicationIds = clubTestRepository.findClubApplicationsIdByStudentId(guest.id);

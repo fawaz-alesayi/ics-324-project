@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+import guest.IStudentRepository;
+import guest.MySQLStudentRepository;
+import guest.Student;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -74,7 +77,9 @@ public class ClubAdminController implements Initializable {
 	@FXML
 	private ComboBox<Integer> clubIdComboBox;
 	@FXML
-	private ComboBox<Integer> applicantListComboBox;
+	private ComboBox<Student> applicantListComboBox;
+	
+	IStudentRepository studentRepo;
 
 	Connection conn = null;
 	Statement stmt = null;
@@ -230,15 +235,9 @@ public class ClubAdminController implements Initializable {
 	public void loadApplicantListComboBox(ActionEvent event) {
 		try {
 			int selectedClubId = clubIdComboBox.getValue();
-			PreparedStatement ps = conn.prepareStatement(
-					"SELECT club_applicant.student_id " + "FROM club_applicant " + "WHERE club_id = ?;");
-			ps.setInt(1, selectedClubId);
-			ResultSet results = ps.executeQuery();
-			List<Integer> applicantsStudentIds = new ArrayList<Integer>();
-			while (results.next())
-				applicantsStudentIds.add(results.getInt(1));
+			List<Student> s = studentRepo.findStudentsWhoAreApplyingToClubId(selectedClubId);
 			clearApplicantListComboBox();
-			applicantListComboBox.getItems().addAll(applicantsStudentIds);
+			applicantListComboBox.getItems().addAll(s);
 
 		} catch (Exception e) {
 			showErrorDialogue("Database Error", "Error", "An error was encountered please try again later");
@@ -252,7 +251,7 @@ public class ClubAdminController implements Initializable {
 
 	public void approveApplicantToJoinClub(ActionEvent event) {
 		int selectedClubId = clubIdComboBox.getValue();
-		int selectedApplicantStudentId = applicantListComboBox.getValue();
+		int selectedApplicantStudentId = applicantListComboBox.getValue().id;
 		try {
 			insertMemberToClub(selectedClubId, selectedApplicantStudentId);
 		} catch (Exception e) {
@@ -352,10 +351,16 @@ public class ClubAdminController implements Initializable {
 			loadComboBoxWithClubIds(clubIdComboBox);
 
 			loadProjectLeaderComboBox();
+			
+			loadRepositories(conn);
 
 		} catch (Exception e) {
 			System.out.println(e);
 		}
 
+	}
+	
+	private void loadRepositories(Connection conn) {
+		studentRepo = new MySQLStudentRepository(conn);
 	}
 }

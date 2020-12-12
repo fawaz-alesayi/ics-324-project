@@ -3,10 +3,14 @@ package guest;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 
 import javax.xml.xpath.XPathEvaluationResult.XPathResultType;
+
+import Controllers.DatabaseDefinitions;
 
 public class MySQLStudentRepository implements IStudentRepository {
 	private Connection conn;
@@ -21,10 +25,10 @@ public class MySQLStudentRepository implements IStudentRepository {
 		PreparedStatement statement = conn.prepareStatement(
 				"INSERT IGNORE INTO student(id, Fname, Lname, phone, StatusID) VALUES (?, ?, ?, ?, ?);");
 		statement.setInt(1, s.id);
-		statement.setString(2, s.firstName);
-		statement.setString(3, s.lastName);
-		statement.setString(4, s.phoneNum);
-		statement.setInt(5, s.standing.standing);
+		statement.setString(2, s.info.firstName);
+		statement.setString(3, s.info.lastName);
+		statement.setString(4, s.info.phoneNum);
+		statement.setInt(5, s.info.standing.standing);
 		statement.execute();
 	}
 
@@ -40,8 +44,9 @@ public class MySQLStudentRepository implements IStudentRepository {
 			String studentPhone = result.getString("phone");
 			int studentStatusID = result.getInt("StatusID");
 			AcademicStanding studentAcademicStanding = new AcademicStanding(studentStatusID);
-			Student newStudent = new Student(id, studentFirstName, studentLastName, studentPhone, studentAcademicStanding);
-			return student.of(newStudent);
+			StudentInfo sInfo = new StudentInfo(studentFirstName, studentLastName, studentPhone, studentAcademicStanding);
+			Student newStudent = new Student(id, sInfo);
+			student = Optional.of(newStudent);
 		}
 		return student;
 	}
@@ -56,6 +61,30 @@ public class MySQLStudentRepository implements IStudentRepository {
 		if (result.next())
 			return studentId = OptionalInt.of(result.getInt(1));
 		return studentId;
+	}
+
+	@Override
+	public List<Student> findStudentsWhoAreApplyingToClubId(int clubId) throws Exception {
+		PreparedStatement ps = conn.prepareStatement(
+				"SELECT club_applicant.student_id " + "FROM club_applicant " + "WHERE club_id = ? "
+						+ "AND StatusID = ?;");
+		ps.setInt(1, clubId);
+		ps.setInt(2, DatabaseDefinitions.PENDING_APPLICATION);
+		ps.execute();
+		ResultSet results = ps.executeQuery();
+		List<Integer> applicantsStudentIds = new ArrayList<Integer>();
+		List<Student> studentList = new ArrayList<Student>();
+
+		while (results.next())
+			applicantsStudentIds.add(results.getInt(1));
+		
+		for (int id: applicantsStudentIds) {
+			Optional<Student> s = findStudentById(id);
+			if (s.isPresent())
+				studentList.add(s.get());
+		}
+		
+		return studentList;
 	}
 
 }

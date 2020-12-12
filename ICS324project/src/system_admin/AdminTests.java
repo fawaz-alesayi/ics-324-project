@@ -21,6 +21,7 @@ import guest.AcademicStanding;
 import guest.IStudentRepository;
 import guest.MySQLStudentRepository;
 import guest.Student;
+import guest.StudentInfo;
 import tests.TestDatabase;
 
 class AdminTests {
@@ -70,7 +71,7 @@ class AdminTests {
 		Optional<Club> c = clubTestRepository.findByName("EE club");
 		assertTrue(c.isPresent());
 		
-		Student student = new Student(12523, "Ahmed", "Al-Khaldi", "+21513135", new AcademicStanding(AcademicStanding.SENIOR));
+		Student student = new Student(12523, new StudentInfo("Ahmed", "Al-Khaldi", "+21513135", new AcademicStanding(AcademicStanding.SENIOR)));
 		AddNewMemberToClubUseCase usecase = new AddNewMemberToClubUseCase(student, c.get().getId(), clubTestRepository, studentRepository, clubMemberRepository);
 		usecase.execute();
 		assertTrue(studentIsAClubMemberOf(c.get().getId(), student));

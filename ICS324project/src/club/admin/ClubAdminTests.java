@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import club.Club;
 import guest.Student;
+import guest.StudentInfo;
 import project.IProjectRepository;
 import project.Project;
 import project.ProjectInfo;
@@ -34,9 +35,9 @@ class ClubAdminTests {
 		Optional<Club> c = config.getClubRepository().findByName("EE club");
 		assertTrue(c.isPresent());
 		
-		Student s1 = new Student(19603, "ProjectLeader", null, null, null);
-		Student s2 = new Student(19602, "ProjectMember1", null, null, null);
-		Student s3 = new Student(19609, "ProjectMember2", null, null, null);
+		Student s1 = new Student(19603, new StudentInfo("ProjectLeader", null, null, null));
+		Student s2 = new Student(19602, new StudentInfo("ProjectMember1", null, null, null));
+		Student s3 = new Student(19609, new StudentInfo("ProjectMember2", null, null, null));
 		ProjectMember[] members = new ProjectMember[3];
 		members[0] = new ProjectMember(s1, "Member");
 		members[1] = new ProjectMember(s2, "Member");
@@ -83,9 +84,9 @@ class ClubAdminTests {
 		Optional<Club> c = config.getClubRepository().findByName("EE club");
 		assertTrue(c.isPresent());
 		
-		Student s1 = new Student(19603, "ProjectLeader", null, null, null);
-		Student s2 = new Student(19602, "ProjectMember1", null, null, null);
-		Student s3 = new Student(19609, "ProjectMember2", null, null, null);
+		Student s1 = new Student(19603, new StudentInfo("ProjectLeader", null, null, null));
+		Student s2 = new Student(19602, new StudentInfo("ProjectMember1", null, null, null));
+		Student s3 = new Student(19609, new StudentInfo("ProjectMember2", null, null, null));
 		ProjectMember[] members = new ProjectMember[3];
 		members[0] = new ProjectMember(s1, "Member");
 		members[1] = new ProjectMember(s2, "Member");

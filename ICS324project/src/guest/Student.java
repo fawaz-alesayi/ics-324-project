@@ -2,17 +2,21 @@ package guest;
 
 public class Student {
 	public int id;
-	String firstName;
-	String lastName;
-	public String phoneNum;
-	AcademicStanding standing;
+	public StudentInfo info;
 
-	public Student(int id, String firstName, String lastName, String phoneNum, AcademicStanding standing) {
+
+	public Student(int id, StudentInfo info) {
 		super();
 		this.id = id;
-		this.firstName = firstName;
-		this.lastName = lastName;
-		this.phoneNum = phoneNum;
-		this.standing = standing;
+		this.info = info;
 	}
+
+
+	@Override
+	public String toString() {
+		return info.firstName + " " + info.lastName;
+	}
+	
+	
+	
 }
