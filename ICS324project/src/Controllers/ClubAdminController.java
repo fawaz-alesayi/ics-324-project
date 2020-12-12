@@ -12,15 +12,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-import club.IClubMemberRepository;
-import club.IClubRepository;
-import club.MySQLClubMemberRepository;
-import club.MySQLClubRepository;
-import club_applications.IClubApplicationRepository;
-import club_applications.MySQLClubApplicationRepository;
-import guest.IStudentRepository;
-import guest.MySQLStudentRepository;
-import guest.Student;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -35,10 +26,8 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
-import javafx.util.StringConverter;
-import project.IProjectRepository;
-import project.MySQLProjectRepository;
 import utility.CreateDbConnection;
+import utility.ShowDialog;
 
 public class ClubAdminController implements Initializable {
 	@FXML
@@ -86,13 +75,7 @@ public class ClubAdminController implements Initializable {
 	@FXML
 	private ComboBox<Integer> clubIdComboBox;
 	@FXML
-	private ComboBox<Student> applicantListComboBox;
-	
-	IStudentRepository studentRepo;
-	IClubMemberRepository clubMemberRepo;
-	IProjectRepository projectRepo;
-	IClubRepository clubRepo;
-	IClubApplicationRepository clubAppRepo;
+	private ComboBox<Integer> applicantListComboBox;
 
 	Connection conn = null;
 	Statement stmt = null;
@@ -104,6 +87,7 @@ public class ClubAdminController implements Initializable {
 	}
 
 	public void AddProject(ActionEvent event) {
+		try {
 		String projectId = addProjectId.getText();
 		String name = addProjectName.getText();
 		name = "'" + name + "'";
@@ -116,36 +100,38 @@ public class ClubAdminController implements Initializable {
 		fromDate = "'" + fromDate + "'";
 		String toDate = addProjectToDate.getValue().toString();
 		toDate = "'" + toDate + "'";
-		if (name.isEmpty() || projectId.isEmpty()) {
-			// statusLbl.setTextFill(Color.RED);
-			// statusLbl.setText("Enter LogIn Information!");
-			System.out.println("write something");
-		} else {
-			try {
+
 				stmt = conn.createStatement();
 				stmt.executeUpdate("INSERT INTO project VALUES(" + projectId + "," + name + "," + projectTypeId + ","
 						+ clubId + "," + desc + "," + fromDate + "," + toDate + "," + statusID + ")");
 				Alert alert = new Alert(AlertType.INFORMATION);
 				alert.setHeaderText("Project Added Successfully");
 				alert.showAndWait();
-			}
 
-			catch (SQLException e) {
-				showErrorDialogue("Database Error", "Error", "An error was encountered please try again later");
+			}catch (SQLException e) {
+				ShowDialog.showErrorDialogue("Error", "failed to add project", "make sure you entered valid information");
+				e.printStackTrace();
+			} catch (Exception e) {
+				ShowDialog.showErrorDialogue("Error", "info required", "please enter all required infromation");
 				e.printStackTrace();
 			}
-		}
+
 	}
 
 	public void ChangeProjectStatus(ActionEvent event) {
 		Integer projectId = changeProjectId.getValue();
 		Integer statusId = changeProjectStatusId.getValue();
 		try {
+			if(projectId.equals(null)||statusId.equals(null))
+				throw new Exception();
 			stmt.executeUpdate("UPDATE project SET statusid=" + statusId + " Where id=" + projectId);
 			Alert alert = new Alert(AlertType.INFORMATION);
 			alert.setHeaderText("Project Status Changed Successfully");
 			alert.showAndWait();
 		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			ShowDialog.showErrorDialogue("Error", "No Club or project ID", "please Choose club and project ID to change the status");
 			e.printStackTrace();
 		}
 	}
@@ -159,13 +145,12 @@ public class ClubAdminController implements Initializable {
 		toDate = "'" + toDate + "'";
 		String role = "'" + "Member" + "'";
 		try {
-			stmt.executeUpdate("INSERT INTO workson VALUES(" + memberId + "," + projectId + "," + fromDate
+			int tst = stmt.executeUpdate("INSERT INTO workson VALUES(" + memberId + "," + projectId + "," + fromDate
 					+ "," + toDate + "," + role + ")");
 			Alert alert = new Alert(AlertType.INFORMATION);
 			alert.setHeaderText("Member Added to Project Successfully");
 			alert.showAndWait();
 		} catch (SQLException e) {
-			showErrorDialogue("Error", "Could not add member", "An error was encountered while adding a member. Please try again later.");
 			e.printStackTrace();
 		}
 	}
@@ -181,7 +166,7 @@ public class ClubAdminController implements Initializable {
 			alert.setHeaderText("Number of projects is: " + count);
 			alert.showAndWait();
 		} catch (SQLException e) {
-			showErrorDialogue("Database Error", "Error", "An error was encountered please try again later");
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -222,21 +207,19 @@ public class ClubAdminController implements Initializable {
 			}
 		} catch (Exception e) {
 			System.err.println(e);
-			showErrorDialogue("Database Error", "Error", "An error was encountered please try again later");
 		}
 	}
 
 	public void loadProjectLeaderComboBox() {
 		try {
 			rs = stmt.executeQuery(
-					"SELECT studentid from clubmember where clubid in (SELECT clubid from clubadmin where studentid ="
-							+ USER_ID + ")");
+					"SELECT studentid from clubmember where clubid in (SELECT clubid from clubadmin"
+					+ " where studentid ="+ USER_ID + ")");
 			while (rs.next()) {
 				selectLeaderComboBox.getItems().add(rs.getInt(1));
 			}
 		} catch (Exception e) {
 			System.err.println(e);
-			showErrorDialogue("Database Error", "Error", "An error was encountered please try again later");
 		}
 	}
 
@@ -251,9 +234,15 @@ public class ClubAdminController implements Initializable {
 	public void loadApplicantListComboBox(ActionEvent event) {
 		try {
 			int selectedClubId = clubIdComboBox.getValue();
-			List<Student> s = studentRepo.findStudentsWhoAreApplyingToClubId(selectedClubId);
+			PreparedStatement ps = conn.prepareStatement(
+					"SELECT club_applicant.studentID " + "FROM club_applicant " + "WHERE clubid = ? and StatusID = 21;");
+			ps.setInt(1, selectedClubId);
+			ResultSet results = ps.executeQuery();
+			List<Integer> applicantsStudentIds = new ArrayList<Integer>();
+			while (results.next())
+				applicantsStudentIds.add(results.getInt(1));
 			clearApplicantListComboBox();
-			applicantListComboBox.getItems().addAll(s);
+			applicantListComboBox.getItems().addAll(applicantsStudentIds);
 
 		} catch (Exception e) {
 			showErrorDialogue("Database Error", "Error", "An error was encountered please try again later");
@@ -267,30 +256,24 @@ public class ClubAdminController implements Initializable {
 
 	public void approveApplicantToJoinClub(ActionEvent event) {
 		int selectedClubId = clubIdComboBox.getValue();
-		Student s = applicantListComboBox.getValue();
-		int selectedApplicantStudentId = s.id;
+		int selectedApplicantStudentId = applicantListComboBox.getValue();
 		try {
-			insertMemberToClub(selectedClubId, selectedApplicantStudentId);
-			changeApplicationStatusToApproved(selectedApplicantStudentId);
-			showCompletionDialogueWithHeader(s.info.getFirstName() + " has joined the club.");
-		} catch (Exception e) {
+			PreparedStatement statement = conn.prepareStatement(
+					"INSERT INTO clubmember(ClubID, StudentID, StatusID, FromDate) VALUES(?, ?, ?, ?);");
+			statement.setInt(1, selectedClubId);
+			statement.setInt(2, selectedApplicantStudentId);
+			statement.setInt(3, 12);
+			statement.setDate(4, getCurrentDateAsSQL());
+			statement.execute();
+
+			statement = conn.prepareStatement("UPDATE club_applicant SET StatusID = ? WHERE StudentID = ? ");
+			statement.setInt(1, 22); // changes the application status to APPROVED.
+			statement.setInt(2, selectedApplicantStudentId);
+			statement.execute();
+		} catch (SQLException e) {
 			showErrorDialogue("Database Error", "Error", "An error was encountered please try again later");
 			e.printStackTrace();
 		}
-	}
-	
-	private void insertMemberToClub(int clubId, int studentId) throws Exception {
-		PreparedStatement statement = conn.prepareStatement(
-				"INSERT INTO clubmember(ClubID, StudentID, StatusID, FromDate) VALUES(?, ?, ?, ?);");
-		statement.setInt(1, clubId);
-		statement.setInt(2, studentId);
-		statement.setInt(3, DatabaseDefinitions.ACTIVE_MEMBER);
-		statement.setDate(4, getCurrentDateAsSQL());
-		statement.execute();
-	}
-	
-	private void changeApplicationStatusToApproved(int applicantId) {
-		
 	}
 
 	private java.sql.Date getCurrentDateAsSQL() {
@@ -304,7 +287,7 @@ public class ClubAdminController implements Initializable {
 		alert.setTitle(title);
 		alert.setHeaderText(header);
 		alert.setContentText(contentText);
-		alert.showAndWait();
+		Optional<ButtonType> action = alert.showAndWait();
 	}
 
 	public void showCompletionDialogueWithHeader(String text) {
@@ -374,38 +357,10 @@ public class ClubAdminController implements Initializable {
 			loadComboBoxWithClubIds(clubIdComboBox);
 
 			loadProjectLeaderComboBox();
-			
-			loadRepositories(conn);
-			
-			changeComboBoxViewToShowFullNameAndId(applicantListComboBox);
 
 		} catch (Exception e) {
 			System.out.println(e);
 		}
 
-	}
-	
-	private void changeComboBoxViewToShowFullNameAndId(ComboBox<Student> combobox) {
-		combobox.setConverter(new StringConverter<Student>() {
-			
-			@Override
-			public String toString(Student s) {
-				return s.info.getFirstName() + " " + s.info.getLastName() + " - ID: " + s.id;
-			}
-
-			@Override
-			public Student fromString(String string) {
-				return combobox.getSelectionModel().getSelectedItem();
-			}
-		});
-		
-	}
-
-	private void loadRepositories(Connection conn) {
-		studentRepo = new MySQLStudentRepository(conn);
-		clubRepo = new MySQLClubRepository(conn);
-		clubMemberRepo = new MySQLClubMemberRepository(conn);
-		projectRepo = new MySQLProjectRepository(conn, clubRepo);
-		clubAppRepo = new MySQLClubApplicationRepository(conn, studentRepo, clubRepo);
 	}
 }
