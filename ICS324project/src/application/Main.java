@@ -10,6 +10,7 @@ import javafx.scene.Scene;
 public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
+    	// this is a comment
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/application/Login.fxml"));
             Scene scene = new Scene(root, 800, 800);
