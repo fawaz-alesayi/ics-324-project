@@ -141,7 +141,7 @@ public class ClubAdminController implements Initializable {
 		toDate = "'" + toDate + "'";
 		String role = "'" + "Member" + "'";
 		try {
-			int tst = stmt.executeUpdate("INSERT INTO workson VALUES(" + memberId + "," + projectId + "," + fromDate
+			stmt.executeUpdate("INSERT INTO workson VALUES(" + memberId + "," + projectId + "," + fromDate
 					+ "," + toDate + "," + role + ")");
 			Alert alert = new Alert(AlertType.INFORMATION);
 			alert.setHeaderText("Member Added to Project Successfully");
@@ -278,7 +278,7 @@ public class ClubAdminController implements Initializable {
 		alert.setTitle(title);
 		alert.setHeaderText(header);
 		alert.setContentText(contentText);
-		Optional<ButtonType> action = alert.showAndWait();
+		alert.showAndWait();
 	}
 
 	public void showCompletionDialogueWithHeader(String text) {
