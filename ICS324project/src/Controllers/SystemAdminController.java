@@ -24,6 +24,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import utility.CreateDbConnection;
+import utility.Dialogues;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -132,17 +133,20 @@ public class SystemAdminController implements Initializable {
 			try {
 				stmt = conn.createStatement();
 				int tst = stmt
-						.executeUpdate("INSERT INTO Club(ID, Name, Address, Phone, des, DepartmentID, StatusID) VALUES("
+						.executeUpdate("INSERT INTO club(ID, Name, Address, Phone, des, DepartmentID, StatusID) VALUES("
 								+ clubID + "," + name + "," + address + "," + phone + "," + desc + "," + depID + ","
 								+ statusID + ");");
 				Alert alert = new Alert(AlertType.INFORMATION);
 				alert.setHeaderText("Club Added Successfully");
 				alert.showAndWait();
 			}
-
-			catch (SQLException e) {
-				// TODO Auto-generated catch block
+			catch (SQLIntegrityConstraintViolationException e) {
+				Dialogues.showErrorDialogue("Error", "Could not add a new club", "This club already exists");
 				e.printStackTrace();
+			}
+			catch (SQLException e) {
+				e.printStackTrace();
+				Dialogues.showErrorDialogue("Error", "Could not add a new club", "There was a problem while adding a club. Please make sure you filled all the fields");
 			}
 		}
 	}
@@ -166,7 +170,7 @@ public class SystemAdminController implements Initializable {
 			try {
 				stmt = conn.createStatement();
 				int tst = stmt.executeUpdate(
-						"INSERT INTO Clubmember VALUES(" + clubID + "," + StudentID + "," + "STR_TO_DATE(" + fromDate
+						"INSERT INTO clubmember VALUES(" + clubID + "," + StudentID + "," + "STR_TO_DATE(" + fromDate
 								+ ", '%Y-%m-%d'), STR_TO_DATE(" + toDate + ", '%Y-%m-%d')," + StatusID + ") ;");
 				Alert alert = new Alert(AlertType.INFORMATION);
 				alert.setHeaderText("Member Added Successfully");
@@ -174,8 +178,8 @@ public class SystemAdminController implements Initializable {
 			}
 
 			catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
+				Dialogues.showErrorDialogue("Error", "Could not add a new student", "There was a problem while adding a member. Please make sure you filled all the fields");
 			}
 		}
 
@@ -194,7 +198,7 @@ public class SystemAdminController implements Initializable {
 			stmt = conn.createStatement();
 			// tst = stmt.executeUpdate("Delete from clubmember WHERE
 			// ID="+studentID);
-			stmt.executeUpdate("INSERT INTO Clubadmin VALUES(" + clubID + "," + studentID + "," + "STR_TO_DATE("
+			stmt.executeUpdate("INSERT INTO clubadmin VALUES(" + clubID + "," + studentID + "," + "STR_TO_DATE("
 					+ fromDate + ", '%Y-%m-%d'), STR_TO_DATE(" + toDate + ", '%Y-%m-%d')," + newRole + ") ;");
 			Alert alert = new Alert(AlertType.INFORMATION);
 			alert.setHeaderText("Member Role Changed Successfully");
@@ -202,8 +206,8 @@ public class SystemAdminController implements Initializable {
 		}
 
 		catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			Dialogues.showErrorDialogue("Error", "Could not add a change the member's role", "There was a problem while changing the member's role.");
 		}
 	}
 
@@ -219,8 +223,7 @@ public class SystemAdminController implements Initializable {
 			}
 
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Dialogues.showErrorDialogue("Error", "Could not add a fetch some club members", "There was a problem while fetching some club members. Please try again later");
 		}
 
 	}
@@ -236,7 +239,7 @@ public class SystemAdminController implements Initializable {
 			alert.setHeaderText("Number of club members is: "+ count);
 			alert.showAndWait();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			Dialogues.showErrorDialogue("Error", "Could not count club members", "There was a problem while counting the number of members of the club. Please try again later.");
 			e.printStackTrace();
 		}
 
@@ -252,7 +255,8 @@ public class SystemAdminController implements Initializable {
 			alert.setHeaderText("Number of club members is: "+ count);
 			alert.showAndWait();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			Dialogues.showErrorDialogue("Error", "Could not count number of projects", "There was a problem while counting number of projects");
+
 			e.printStackTrace();
 		}
 
@@ -319,6 +323,8 @@ public class SystemAdminController implements Initializable {
 			}
 		} catch (Exception e) {
 			System.out.println(e);
+			Dialogues.showErrorDialogue("Error", "Could not load some data", "There was a problem while loading some data.");
+
 		}
 
 	}

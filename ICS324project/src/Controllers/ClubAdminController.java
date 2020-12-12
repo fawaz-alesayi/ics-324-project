@@ -165,6 +165,7 @@ public class ClubAdminController implements Initializable {
 			alert.setHeaderText("Member Added to Project Successfully");
 			alert.showAndWait();
 		} catch (SQLException e) {
+			showErrorDialogue("Error", "Could not add member", "An error was encountered while adding a member. Please try again later.");
 			e.printStackTrace();
 		}
 	}
