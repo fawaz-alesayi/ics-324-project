@@ -11,7 +11,7 @@
    <children>
       <BorderPane layoutX="-131.0" layoutY="-159.0" prefHeight="200.0" prefWidth="200.0" />
       <Button fx:id="terminateBtn" layoutX="14.0" layoutY="514.0" mnemonicParsing="false" onAction="#terminateMember" text="Terminate Club Membership" textFill="#e30707" textOverrun="CLIP" AnchorPane.bottomAnchor="70.0" AnchorPane.leftAnchor="14.0" />
-      <Button fx:id="joinProjectBtn" layoutX="307.0" layoutY="514.0" maxHeight="31.0" maxWidth="158.0" minHeight="31.0" minWidth="158.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="158.0" text="Volunteer for project" AnchorPane.bottomAnchor="70.0" AnchorPane.leftAnchor="307.0" AnchorPane.rightAnchor="306.0" />
+      <Button fx:id="joinProjectBtn" layoutX="307.0" layoutY="514.0" maxHeight="31.0" maxWidth="158.0" minHeight="31.0" minWidth="158.0" mnemonicParsing="false" onAction="#joinProject" prefHeight="31.0" prefWidth="158.0" text="Volunteer for project" AnchorPane.bottomAnchor="70.0" AnchorPane.leftAnchor="307.0" AnchorPane.rightAnchor="306.0" />
       <ComboBox fx:id="joinProjectId" layoutX="25.0" layoutY="417.0" maxHeight="31.0" maxWidth="158.0" prefHeight="31.0" prefWidth="256.0" promptText="Project ID" AnchorPane.bottomAnchor="167.0" AnchorPane.leftAnchor="25.0" />
       <TableView fx:id="projectTable" layoutX="10.0" layoutY="14.0" prefHeight="391.0" prefWidth="752.0" AnchorPane.bottomAnchor="210.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="9.0" AnchorPane.topAnchor="14.0">
          <columnResizePolicy>

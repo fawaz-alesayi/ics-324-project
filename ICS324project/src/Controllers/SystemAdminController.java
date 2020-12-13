@@ -119,16 +119,13 @@ public class SystemAdminController implements Initializable {
 		try {
 			int clubID = Integer.parseInt(txtClubID.getText());
 			String name = txtName.getText();
-			name = "'" + name + "'";
 			String address = txtAddress.getText();
-			address = "'" + address + "'";
 			String phone = txtPhone.getText();
 			String desc = txtDesc.getText();
-			desc = "'" + desc + "'";
 			Integer depID = addClubDepID.getValue();
 			Integer statusID = addClubStatusID.getValue();
 
-			stmt = conn.prepareStatement("INSERT INTO Club(ID, Name, Address, Phone, des, DepartmentID, StatusID)"
+			stmt = conn.prepareStatement("INSERT INTO club(ID, Name, Address, Phone, des, DepartmentID, StatusID)"
 					+ "VALUES(?, ?, ?, ?, ?, ?, ? )");
 			stmt.setInt(1, clubID);
 			stmt.setString(2, name);
@@ -181,7 +178,7 @@ public class SystemAdminController implements Initializable {
 				dateTo = getCurrentDateAsSQL();
 			}
 
-			stmt = conn.prepareStatement("INSERT INTO Clubmember VALUES(?, ?, ?, ?, ?);");
+			stmt = conn.prepareStatement("INSERT INTO clubmember VALUES(?, ?, ?, ?, ?)");
 			stmt.setInt(1, clubID);
 			stmt.setInt(2, StudentID);
 			stmt.setDate(3, dateFrom);
@@ -227,7 +224,7 @@ public class SystemAdminController implements Initializable {
 				dateTo = getCurrentDateAsSQL();
 			}
 
-			stmt = conn.prepareStatement("INSERT INTO Clubadmin VALUES(?, ?, ?, ?, ?);");
+			stmt = conn.prepareStatement("INSERT INTO clubadmin VALUES(?, ?, ?, ?, ?);");
 			stmt.setInt(1, clubID);
 			stmt.setInt(2, studentID);
 			stmt.setDate(3, dateFrom);
@@ -241,7 +238,7 @@ public class SystemAdminController implements Initializable {
 			stmt.setInt(1, 2);
 			stmt.setInt(2, studentID);
 			stmt.executeUpdate();
-			alert.setHeaderText("user type changed to ClubAdmin Successfully");
+			alert.setHeaderText("user type changed to clubAdmin Successfully");
 			alert.showAndWait();
 
 		}catch (SQLException e) {
@@ -258,7 +255,7 @@ public class SystemAdminController implements Initializable {
 		Integer clubID = changeRoleClubID.getValue();
 		try {
 			PreparedStatement st = conn
-					.prepareStatement("SELECT STUDENTID FROM CLUBMEMBER WHERE clubId =  ? " + "and statusID = 12");
+					.prepareStatement("SELECT STUDENTID FROM clubmember WHERE clubId =  ? " + "and statusID = 12");
 			st.setInt(1, clubID);
 			rs = st.executeQuery();
 			while (rs.next()) {

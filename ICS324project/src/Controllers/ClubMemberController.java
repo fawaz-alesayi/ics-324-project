@@ -152,38 +152,70 @@ public class ClubMemberController implements Initializable {
 	}
 
 	public void joinProject(ActionEvent event) {
+		try {
 		Integer projectId = joinProjectId.getValue();
 		String fromDate = joinFromDate.getValue().toString();
 		fromDate = "'" + fromDate + "'";
 		String toDate = joinToDate.getValue().toString();
 		toDate = "'" + toDate + "'";
 		String role = "'" + "Member" + "'";
-		try {
+		
 			stmt = conn.createStatement();
 			stmt.executeUpdate("INSERT INTO workson VALUES(" + USER_ID + "," + projectId + "," + fromDate + "," + toDate
 					+ "," + role + ")");
 			Alert alert = new Alert(AlertType.INFORMATION);
 			alert.setHeaderText("Volenteered for Project Successfully");
 			alert.showAndWait();
-		}
-
-		catch (SQLException e) {
+			
+		}catch (SQLException e) {
+			ShowDialog.showErrorDialogue("Error", "failed to join project", "make sure you entered valid member information");
+			e.printStackTrace();
+		} catch (Exception e) {
+			ShowDialog.showErrorDialogue("Error", "info required", "please enter all required infromation");
 			e.printStackTrace();
 		}
 	}
 
-	public void terminateMember(ActionEvent event) {
-		try {
-			stmt = conn.createStatement();
+	public void terminateMember(ActionEvent event) {		
+		try {	
 			Integer clubID = terminateClubId.getValue();
-			stmt.executeUpdate("DELETE FROM clubmember WHERE clubid=" + clubID + " and studentid=" + USER_ID);
-			Alert alert = new Alert(AlertType.INFORMATION);
-			alert.setHeaderText("Terminated from Club Successfully");
-			alert.showAndWait();
+			if(clubID.equals(null)) {
+				throw new Exception();
+			}
+				Alert alert = new Alert(AlertType.CONFIRMATION);
+				alert.setTitle("Confirmation Dialog");
+				alert.setHeaderText(null);
+				alert.setContentText("Are you sure you want to terminate club Membership?");
+				Optional<ButtonType> action = alert.showAndWait();
+				if (action.get() == ButtonType.OK) {
+					
+					stmt = conn.createStatement();					
+					stmt.executeUpdate("DELETE FROM clubmember WHERE clubid=" + clubID + " and studentid=" + USER_ID);
+					stmt.executeUpdate("DELETE FROM user WHERE studentid=" + USER_ID);
+					stmt.executeUpdate("DELETE FROM workson WHERE studentid=" + USER_ID + " and projectID in"
+							+ "( SELECT id FROM project WHERE clubid =" + clubID+");");
+					Alert alert2 = new Alert(AlertType.INFORMATION);
+					alert2.setHeaderText("Terminated from Club Successfully");
+					alert2.showAndWait();
+					// go to login page
+					Node node = (Node) event.getSource();
+					Stage stage = (Stage) node.getScene().getWindow();
+					stage.close();
+					Scene scene = new Scene(FXMLLoader.load(getClass().getResource("/application/Login.fxml")));
+					stage.setScene(scene);
+					stage.show();
+				}			 
+			
 		}
 
 		catch (SQLException e) {
 			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			ShowDialog.showErrorDialogue("Error", "no ClubID", "please choose a Club id to terminate Membership");
 			e.printStackTrace();
 		}
 	}

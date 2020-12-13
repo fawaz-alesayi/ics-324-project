@@ -107,7 +107,8 @@ public class ClubAdminController implements Initializable {
 				Alert alert = new Alert(AlertType.INFORMATION);
 				alert.setHeaderText("Project Added Successfully");
 				alert.showAndWait();
-
+				fillchangeProjectId();
+				filladdMemberProjectId();
 			}catch (SQLException e) {
 				ShowDialog.showErrorDialogue("Error", "failed to add project", "make sure you entered valid information");
 				e.printStackTrace();
@@ -210,18 +211,7 @@ public class ClubAdminController implements Initializable {
 		}
 	}
 
-	public void loadProjectLeaderComboBox() {
-		try {
-			rs = stmt.executeQuery(
-					"SELECT studentid from clubmember where clubid in (SELECT clubid from clubadmin"
-					+ " where studentid ="+ USER_ID + ")");
-			while (rs.next()) {
-				selectLeaderComboBox.getItems().add(rs.getInt(1));
-			}
-		} catch (Exception e) {
-			System.err.println(e);
-		}
-	}
+	
 
 	public void loadProjectLeaderComboBox(ActionEvent event) {
 		try {
@@ -265,7 +255,10 @@ public class ClubAdminController implements Initializable {
 			statement.setInt(3, 12);
 			statement.setDate(4, getCurrentDateAsSQL());
 			statement.execute();
-			
+			ShowDialog.showCompletionDialogueWithHeader("Student Approved to join club!");			
+			statement = conn.prepareStatement("UPDATE user SET userTypeID = 3, statusId = 19 WHERE StudentID = ? ");
+			statement.setInt(1, selectedApplicantStudentId);
+			statement.execute();
 			statement = conn.prepareStatement("UPDATE club_applicant SET StatusID = ? WHERE StudentID = ? ");
 			statement.setInt(1, 22); // changes the application status to APPROVED.
 			statement.setInt(2, selectedApplicantStudentId);
@@ -311,10 +304,55 @@ public class ClubAdminController implements Initializable {
 			comboBox.getItems().add(rs.getInt(1));
 		}
 	}
-
+	private void fillchangeProjectId() {
+		changeProjectId.getItems().clear();
+		try {
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery(
+					"SELECT id FROM project WHERE clubid in (SELECT clubid from clubadmin where studentid =" + USER_ID
+							+ ")");
+			while (rs.next()) {
+				changeProjectId.getItems().add(rs.getInt(1));
+			}
+		}catch (SQLException e) {
+			ShowDialog.showErrorDialogue("fatalError", "Uknown Error", "something bad happend");
+			e.printStackTrace();
+		}
+	}
+	private void filladdMemberProjectId() {
+		addMemberProjectId.getItems().clear();
+		try {
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery(
+					"SELECT id FROM project WHERE clubid in (SELECT clubid from clubadmin where studentid =" + USER_ID
+							+ ")");
+			while (rs.next()) {
+				addMemberProjectId.getItems().add(rs.getInt(1));
+			}
+		}catch (SQLException e) {
+			ShowDialog.showErrorDialogue("fatalError", "Uknown Error", "something bad happend");
+			e.printStackTrace();
+		}
+	}
+	private void fillselectLeaderComboBox() {
+		selectLeaderComboBox.getItems().clear();
+		try {
+			rs = stmt.executeQuery(
+					"SELECT studentid from clubmember where clubid in (SELECT clubid from clubadmin"
+					+ " where studentid ="+ USER_ID + ")");
+			while (rs.next()) {
+				selectLeaderComboBox.getItems().add(rs.getInt(1));
+			}
+		}catch (SQLException e) {
+			ShowDialog.showErrorDialogue("fatalError", "Uknown Error", "something bad happend");
+			e.printStackTrace();
+		}
+	}
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		try {
+			fillchangeProjectId();
+			filladdMemberProjectId();
 			stmt = conn.createStatement();
 			rs = stmt.executeQuery("SELECT ID FROM projecttype");
 			while (rs.next()) {
@@ -330,12 +368,7 @@ public class ClubAdminController implements Initializable {
 			while (rs.next()) {
 				addProjectStatusId.getItems().add(rs.getInt(1));
 			}
-			rs = stmt.executeQuery(
-					"SELECT id FROM project WHERE clubid in (SELECT clubid from clubadmin where studentid =" + USER_ID
-							+ ")");
-			while (rs.next()) {
-				changeProjectId.getItems().add(rs.getInt(1));
-			}
+			
 			rs = stmt.executeQuery("SELECT ID FROM status WHERE statustypeid = 3");
 			while (rs.next()) {
 				changeProjectStatusId.getItems().add(rs.getInt(1));
@@ -347,17 +380,12 @@ public class ClubAdminController implements Initializable {
 			while (rs.next()) {
 				addMemberId.getItems().add(rs.getInt(1));
 			}
-			rs = stmt.executeQuery(
-					"SELECT id FROM project WHERE clubid in (SELECT clubid from clubadmin where studentid =" + USER_ID
-							+ ")");
-			while (rs.next()) {
-				addMemberProjectId.getItems().add(rs.getInt(1));
-			}
+			
 
 			loadComboBoxWithClubIds(computeProjectsClubId);
 			loadComboBoxWithClubIds(clubIdComboBox);
 
-			loadProjectLeaderComboBox();
+			fillselectLeaderComboBox();
 
 		} catch (Exception e) {
 			System.out.println(e);

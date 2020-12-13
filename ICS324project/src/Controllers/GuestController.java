@@ -34,6 +34,7 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import utility.BCrypt;
 import utility.CreateDbConnection;
+import utility.ShowDialog;
 
 public class GuestController implements Initializable {
 	@FXML
@@ -140,13 +141,14 @@ public class GuestController implements Initializable {
 		return info;
 	}
 	public void registerInClub(ActionEvent event){
+		try {
 		String[] clubInfo = getClubInfo();
 		int clubId = Integer.parseInt(clubInfo[0]);
 		int studentId = Integer.parseInt(stuID.getText());
 		String password = passW.getText();
 		String encPassWord = BCrypt.hashpw(password, BCrypt.gensalt());
 		System.out.println(encPassWord);
-		try {
+		
 
 			// stores the information in club_applicant table
 		    stmt = conn.prepareStatement("INSERT INTO club_applicant VALUES (?, ?, ?, ?)");
@@ -178,6 +180,10 @@ public class GuestController implements Initializable {
 		    }
 
 		} catch (SQLException e) {
+			ShowDialog.showErrorDialogue("Error", "member not added", "make sure you entered valid member information");
+			e.printStackTrace();
+		} catch (Exception e) {
+			ShowDialog.showErrorDialogue("Error", "info required", "please enter all required infromation");
 			e.printStackTrace();
 		}
 

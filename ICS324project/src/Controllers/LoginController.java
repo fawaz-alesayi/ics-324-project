@@ -66,10 +66,12 @@ public class LoginController implements Initializable {
 		} else {
 			try {
 				int uid = Integer.parseInt(id);
-				stmt = conn.prepareStatement("SELECT password FROM user WHERE StudentID = ?");
+				stmt = conn.prepareStatement("SELECT password FROM user WHERE StudentID = ? and statusID = 19");
 				stmt.setInt(1, uid);
 				rs = stmt.executeQuery();
-				rs.next();
+				if(rs.next()) {
+					
+				}
 				String encPassW = rs.getString(1);
 				if(!BCrypt.checkpw(passW, encPassW)){
 					statusLbl.setTextFill(Color.RED);
